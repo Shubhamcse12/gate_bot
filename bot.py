@@ -1,13 +1,15 @@
 import os
 from telegram.ext import Updater, CommandHandler
+from syllabus import syllabus
 
 TOKEN = os.environ.get("BOT_TOKEN")
 
 def start(update, context):
     update.message.reply_text(
-        "✅ Bot is LIVE!\n\n"
-        "This is Step 1 (minimal bot).\n"
-        "If you see this, deployment is correct."
+        "📚 GATE Planner – Step 2\n\n"
+        "Here is TODAY'S topic:\n\n"
+        f"➡️ {syllabus[0]}\n\n"
+        "Progress tracking will be added next."
     )
 
 def main():
