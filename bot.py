@@ -185,15 +185,17 @@ def button_handler(update, context):
 
 # ---------------- DAILY REMINDER ----------------
 
-def daily_reminder(context):
+def daily_reminder(bot):
     data = load_data()
     for uid in data:
-        user = data[uid]
-        topic = syllabus[user["index"]]
-        context.bot.send_message(
+        index = data[uid]["index"]
+        topic = syllabus[index]
+
+        bot.send_message(
             chat_id=int(uid),
             text=f"⏰ Daily Reminder\n\n📌 Today's Topic:\n➡️ {topic}"
         )
+
 
 # ---------------- BOT START ----------------
 
@@ -209,11 +211,15 @@ def main():
     dp.add_handler(MessageHandler(Filters.text & ~Filters.command, button_handler))
 
     scheduler = BackgroundScheduler()
-    scheduler.add_job(daily_reminder, "cron", hour=7, minute=0, args=[updater])
+    scheduler.add_job(
+    daily_reminder,
+    "cron",
+    hour=7,
+    minute=0,
+    args=[updater.bot]
+    )
     scheduler.start()
 
-    updater.start_polling()
-    updater.idle()
 
 if __name__ == "__main__":
     main()
