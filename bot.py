@@ -1,5 +1,7 @@
 import os
 import json
+import pytz
+
 from datetime import datetime, date
 from telegram.ext import (
     Updater, CommandHandler, MessageHandler, Filters
@@ -210,16 +212,21 @@ def main():
     dp.add_handler(CommandHandler("reset", reset))
     dp.add_handler(MessageHandler(Filters.text & ~Filters.command, button_handler))
 
-    scheduler = BackgroundScheduler()
+    # ---- FIXED DAILY REMINDER (IST) ----
+    ist = pytz.timezone("Asia/Kolkata")
+
+    scheduler = BackgroundScheduler(timezone=ist)
     scheduler.add_job(
-    daily_reminder,
-    "cron",
-    hour=7,
-    minute=0,
-    args=[updater.bot]
+        daily_reminder,
+        "cron",
+        hour=7,
+        minute=0,
+        args=[updater.bot]
     )
     scheduler.start()
 
+    updater.start_polling()
+    updater.idle()
 
 if __name__ == "__main__":
     main()
