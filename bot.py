@@ -27,7 +27,7 @@ def save_data(data):
         json.dump(data, f, indent=4)
 
 
-def get_user(data, user_id):
+def ensure_user(data, user_id):
     uid = str(user_id)
     if uid not in data:
         data[uid] = {"index": 0}
@@ -38,22 +38,33 @@ def get_user(data, user_id):
 
 def start(update, context):
     user_id = update.effective_user.id
-    data = load_data()
-    data = get_user(data, user_id)
+    data = ensure_user(load_data(), user_id)
     save_data(data)
 
     index = data[str(user_id)]["index"]
     update.message.reply_text(
-        f"📚 GATE Planner – Step 3\n\n"
+        f"📚 GATE Planner – Step 4\n\n"
         f"📌 Current Topic:\n➡️ {syllabus[index]}\n\n"
-        f"Use /done when finished."
+        f"Commands:\n"
+        f"/today – show current topic\n"
+        f"/done – mark completed\n"
+        f"/status – progress summary"
+    )
+
+
+def today_cmd(update, context):
+    user_id = update.effective_user.id
+    data = ensure_user(load_data(), user_id)
+
+    index = data[str(user_id)]["index"]
+    update.message.reply_text(
+        f"📌 Today's Topic:\n➡️ {syllabus[index]}"
     )
 
 
 def done(update, context):
     user_id = update.effective_user.id
-    data = load_data()
-    data = get_user(data, user_id)
+    data = ensure_user(load_data(), user_id)
 
     index = data[str(user_id)]["index"] + 1
 
@@ -65,8 +76,22 @@ def done(update, context):
     save_data(data)
 
     update.message.reply_text(
-        f"✅ Marked completed!\n\n"
+        f"✅ Completed!\n\n"
         f"➡️ Next Topic:\n{syllabus[index]}"
+    )
+
+
+def status(update, context):
+    user_id = update.effective_user.id
+    data = ensure_user(load_data(), user_id)
+
+    completed = data[str(user_id)]["index"]
+    total = len(syllabus)
+
+    update.message.reply_text(
+        f"📊 Progress Status\n\n"
+        f"✅ Completed Topics: {completed}/{total}\n"
+        f"📘 Current Topic:\n➡️ {syllabus[completed]}"
     )
 
 
@@ -77,7 +102,9 @@ def main():
     dp = updater.dispatcher
 
     dp.add_handler(CommandHandler("start", start))
+    dp.add_handler(CommandHandler("today", today_cmd))
     dp.add_handler(CommandHandler("done", done))
+    dp.add_handler(CommandHandler("status", status))
 
     updater.start_polling()
     updater.idle()
